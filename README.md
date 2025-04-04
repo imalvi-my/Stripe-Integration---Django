@@ -5,7 +5,9 @@ A Django application that demonstrates integration with Stripe for product manag
 ## Features
 
 - Product management (Create, Read, Update, Delete)
-- Stripe integration for product and price management
+- Shopping cart functionality
+- Stripe Checkout integration for secure payments
+- Automatic product syncing with Stripe
 - Environment-based configuration
 - Responsive UI
 
@@ -92,9 +94,12 @@ stripe-integration-django/
     ├── forms.py
     └── templates/
         └── products/
+            ├── base.html
             ├── product_list.html
             ├── product_form.html
-            └── product_confirm_delete.html
+            ├── product_confirm_delete.html
+            ├── cart.html
+            └── checkout_success.html
 ```
 
 ## Deployment
