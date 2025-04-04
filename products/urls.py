@@ -15,4 +15,6 @@ urlpatterns = [
     # Checkout URLs
     path('checkout/', views.checkout, name='checkout'),
     path('checkout/success/', views.checkout_success, name='checkout_success'),
+    path('transactions/', views.transaction_list, name='transaction_list'),
+    path('transactions/receipt/<str:payment_intent_id>/', views.view_receipt, name='view_receipt'),
 ]

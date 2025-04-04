@@ -1,0 +1,60 @@
+{% extends 'products/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Transaction History</h2>
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Transaction ID</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Customer Email</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                    <td>{{ transaction.date|date:"Y-m-d H:i:s" }}</td>
+                    <td>{{ transaction.id }}</td>
+                    <td>{{ transaction.currency }} {{ transaction.amount }}</td>
+                    <td>
+                        <span class="badge {% if transaction.status == 'succeeded' %}bg-success{% else %}bg-warning{% endif %}">
+                            {{ transaction.status }}
+                        </span>
+                    </td>
+                    <td>{{ transaction.customer_email }}</td>
+                    <td>
+                        {% if transaction.receipt_url %}
+                        <a href="{% url 'products:view_receipt' transaction.id %}" class="btn btn-sm btn-primary" target="_blank">
+                            View Receipt
+                        </a>
+                        {% else %}
+                        <span class="text-muted">No receipt available</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No transactions found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

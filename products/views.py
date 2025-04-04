@@ -1,13 +1,14 @@
+import stripe
+from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from django.urls import reverse
+from django.conf import settings
+from django.views.decorators.http import require_POST
+from stripe.error import StripeError
 from .models import Product, Cart, CartItem
 from .forms import ProductForm
-import stripe
-from django.conf import settings
-from stripe.error import StripeError
-from django.views.decorators.http import require_POST
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -188,3 +189,42 @@ def checkout_success(request):
     cart.items.all().delete()
     messages.success(request, 'Payment successful! Thank you for your purchase.')
     return redirect('products:product_list')
+
+def transaction_list(request):
+    try:
+        # Retrieve all payments from Stripe, ordered by creation date
+        payments = stripe.PaymentIntent.list(limit=100)
+        
+        transactions = []
+        for payment in payments.data:
+            # Get the associated charge to get more details
+            if payment.latest_charge:
+                charge = stripe.Charge.retrieve(payment.latest_charge)
+                transactions.append({
+                    'id': payment.id,
+                    'amount': payment.amount / 100,  # Convert cents to dollars
+                    'currency': payment.currency.upper(),
+                    'status': payment.status,
+                    'date': datetime.fromtimestamp(payment.created),
+                    'receipt_url': charge.receipt_url,
+                    'customer_email': charge.billing_details.email if charge.billing_details.email else 'N/A'
+                })
+        
+        return render(request, 'products/transaction_list.html', {'transactions': transactions})
+    except stripe.error.StripeError as e:
+        messages.error(request, f'Error retrieving transactions: {str(e)}')
+        return redirect('products:product_list')
+
+def view_receipt(request, payment_intent_id):
+    try:
+        payment = stripe.PaymentIntent.retrieve(payment_intent_id)
+        if payment.latest_charge:
+            charge = stripe.Charge.retrieve(payment.latest_charge)
+            if charge.receipt_url:
+                return redirect(charge.receipt_url)
+        
+        messages.error(request, 'Receipt not available for this transaction.')
+        return redirect('products:transaction_list')
+    except stripe.error.StripeError as e:
+        messages.error(request, f'Error retrieving receipt: {str(e)}')
+        return redirect('products:transaction_list')
