@@ -1,0 +1,38 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Products - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col">
+        <h1>Products</h1>
+        <div class="btn-toolbar">
+            <a href="{% url 'product_create' %}" class="btn btn-primary">Add New Product</a>
+        </div>
+
+        <div class="row">
+            {% for product in products %}
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">{{ product.description }}</p>
+                            <p class="card-text"><strong>Price:</strong> ${{ product.price }}</p>
+                            <div class="btn-group">
+                                <a href="{% url 'product_update' product.pk %}" class="btn btn-outline-primary">Edit</a>
+                                <a href="{% url 'product_delete' product.pk %}" class="btn btn-outline-danger">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col">
+                    <div class="alert alert-info">
+                        No products available. Click "Add New Product" to create one.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
